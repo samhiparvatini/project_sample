@@ -1,0 +1,122 @@
+<section class="signup-panel" aria-labelledby="signup-heading">
+  <h1 id="signup-heading">Create an account</h1>
+  <p class="intro">Enter your details to sign up.</p>
+  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="field">
+      <label for="signup-firstName" class="form-label">First name</label>
+      <input
+        id="signup-firstName"
+        type="text"
+        class="form-control"
+        formControlName="firstName"
+        autocomplete="given-name"
+        required
+        placeholder="Enter your first name"
+        [class.is-invalid]="
+          signupForm.controls.firstName.touched && signupForm.controls.firstName.invalid
+        "
+        [attr.aria-invalid]="
+          signupForm.controls.firstName.touched && signupForm.controls.firstName.invalid
+        "
+        [attr.aria-describedby]="
+          signupForm.controls.firstName.touched && signupForm.controls.firstName.invalid
+            ? 'firstName-error'
+            : null
+        "
+      />
+      @if (signupForm.controls.firstName.touched && signupForm.controls.firstName.invalid) {
+        <p id="firstName-error" class="field-error">Enter your first name.</p>
+      }
+    </div>
+    <div class="field">
+      <label for="signup-lastName" class="form-label">Last name</label>
+      <input
+        id="signup-lastName"
+        type="text"
+        class="form-control"
+        formControlName="lastName"
+        autocomplete="family-name"
+        required
+        placeholder="Enter your last name"
+        [class.is-invalid]="
+          signupForm.controls.lastName.touched && signupForm.controls.lastName.invalid
+        "
+        [attr.aria-invalid]="
+          signupForm.controls.lastName.touched && signupForm.controls.lastName.invalid
+        "
+        [attr.aria-describedby]="
+          signupForm.controls.lastName.touched && signupForm.controls.lastName.invalid
+            ? 'lastName-error'
+            : null
+        "
+      />
+      @if (signupForm.controls.lastName.touched && signupForm.controls.lastName.invalid) {
+        <p id="lastName-error" class="field-error">Enter your last name.</p>
+      }
+    </div>
+    <div class="field">
+      <label for="signup-username" class="form-label">Username</label>
+      <input
+        id="signup-username"
+        type="text"
+        class="form-control"
+        formControlName="username"
+        autocomplete="username"
+        required
+        placeholder="Enter your username"
+        [class.is-invalid]="
+          signupForm.controls.username.touched && signupForm.controls.username.invalid
+        "
+        [attr.aria-invalid]="
+          signupForm.controls.username.touched && signupForm.controls.username.invalid
+        "
+        [attr.aria-describedby]="
+          signupForm.controls.username.touched && signupForm.controls.username.invalid
+            ? 'username-error'
+            : null
+        "
+      />
+      @if (signupForm.controls.username.touched && signupForm.controls.username.invalid) {
+        <p id="username-error" class="field-error">Enter a username of up to 100 characters.</p>
+      }
+    </div>
+    <div class="field">
+      <label for="signup-password" class="form-label">Password</label>
+      <input
+        id="signup-password"
+        type="password"
+        class="form-control"
+        formControlName="password"
+        autocomplete="new-password"
+        required
+        placeholder="Enter your password"
+        [class.is-invalid]="
+          signupForm.controls.password.touched && signupForm.controls.password.invalid
+        "
+        [attr.aria-invalid]="
+          signupForm.controls.password.touched && signupForm.controls.password.invalid
+        "
+        [attr.aria-describedby]="
+          signupForm.controls.password.touched && signupForm.controls.password.invalid
+            ? 'password-error'
+            : null
+        "
+      />
+      @if (signupForm.controls.password.touched && signupForm.controls.password.invalid) {
+        <p id="password-error" class="field-error">
+          Enter a password between 8 and 1024 characters.
+        </p>
+      }
+    </div>
+    <button
+      type="submit"
+      class="btn signup-button"
+      [disabled]="isSubmitting() || accountCreated()"
+      [attr.aria-busy]="isSubmitting()"
+    >
+      {{ accountCreated() ? 'Account created' : isSubmitting() ? 'Creating account…' : 'Sign up' }}
+    </button>
+    <p class="mt-3">Already have an account? <a routerLink="/login">Log in</a></p>
+    <p class="status-message" role="status">{{ statusMessage() }}</p>
+  </form>
+</section>

@@ -1,0 +1,130 @@
+<section aria-labelledby="form-heading">
+  <h1 id="form-heading" class="h3">the SUPER RAD survey!</h1>
+  <p class="text-muted">Complete your form here.</p>
+
+  <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
+    <div class="field">
+      <label for="survey-color" class="form-label">What is your favorite color?</label>
+      <select id="survey-color" class="form-select" formControlName="color">
+        <option value="" disabled>
+          {{
+            colorsLoading()
+              ? 'Loading colors…'
+              : colors().length
+                ? 'Select a color'
+                : 'No colors available'
+          }}
+        </option>
+        @for (color of colors(); track $index) {
+          <option [value]="color.name">{{ color.name }}</option>
+        }
+      </select>
+      @if (colorsError()) {
+        <p class="text-danger mt-2" role="alert">{{ colorsError() }}</p>
+      }
+    </div>
+
+    <fieldset class="field">
+      <legend>Are pineapples on pizza acceptable?</legend>
+      <div class="answer-options">
+        <label class="answer-option" for="survey-yes">
+          <input
+            id="survey-yes"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="surveyForm.controls.firstSurvey.value === 'yes'"
+            (change)="selectFirstSurvey('yes', $event)"
+          />
+          Yes
+        </label>
+        <label class="answer-option" for="survey-no">
+          <input
+            id="survey-no"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="surveyForm.controls.firstSurvey.value === 'no'"
+            (change)="selectFirstSurvey('no', $event)"
+          />
+          No
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>Would you rather have…</legend>
+      <div class="answer-options">
+        <label class="answer-option" for="survey-spaghetti">
+          <input
+            id="survey-spaghetti"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="surveyForm.controls.wouldRather.value === 'spaghetti'"
+            (change)="selectWouldRather('spaghetti', $event)"
+          />
+          Spaghetti for Hair
+        </label>
+        <span class="option-divider">OR</span>
+        <label class="answer-option" for="survey-waffles">
+          <input
+            id="survey-waffles"
+            type="checkbox"
+            class="form-check-input"
+            [checked]="surveyForm.controls.wouldRather.value === 'waffles'"
+            (change)="selectWouldRather('waffles', $event)"
+          />
+          Waffles for Ears
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="row g-3">
+      <div class="col-md-6 field">
+        <label for="survey-first-name" class="form-label">First name</label>
+        <input
+          id="survey-first-name"
+          class="form-control"
+          type="text"
+          formControlName="firstName"
+          autocomplete="given-name"
+          placeholder="First name"
+        />
+      </div>
+      <div class="col-md-6 field">
+        <label for="survey-last-name" class="form-label">Last name</label>
+        <input
+          id="survey-last-name"
+          class="form-control"
+          type="text"
+          formControlName="lastName"
+          autocomplete="family-name"
+          placeholder="Last name"
+        />
+      </div>
+    </div>
+    <div class="field">
+      <label for="survey-email" class="form-label">Email address</label>
+      <input
+        id="survey-email"
+        class="form-control"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="you@example.com"
+      />
+    </div>
+    <div class="field">
+      <label for="survey-comments" class="form-label">Additional comments</label>
+      <textarea
+        id="survey-comments"
+        class="form-control"
+        rows="4"
+        formControlName="comments"
+        placeholder="Tell us a little more..."
+      ></textarea>
+    </div>
+    @if (errorMessage()) {
+      <p class="text-danger" role="alert">{{ errorMessage() }}</p>
+    }
+    <button type="submit" class="btn submit-button">Submit</button>
+  </form>
+</section>

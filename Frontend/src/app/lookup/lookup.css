@@ -1,0 +1,59 @@
+:host {
+  display: block;
+}
+
+.lookup-table {
+  margin-top: 1.5rem;
+  border: 1px solid #ecddd5;
+  border-radius: 12px;
+}
+
+.table {
+  --bs-table-color: var(--app-ink);
+  --bs-table-border-color: #ecddd5;
+}
+
+th,
+td {
+  padding: 1rem 1.25rem;
+}
+
+thead th {
+  background: #fcf0e9;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.empty-state {
+  padding-block: 2.5rem;
+  text-align: center;
+  color: var(--app-muted);
+}
+
+.form-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--app-accent);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: #a93619;
+}
+
+a:focus-visible,
+.lookup-table:focus-visible {
+  outline: 3px solid var(--app-accent);
+  outline-offset: 3px;
+}

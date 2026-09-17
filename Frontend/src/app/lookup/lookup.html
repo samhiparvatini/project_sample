@@ -1,0 +1,46 @@
+<section aria-labelledby="lookup-heading">
+  <h1 id="lookup-heading" class="h3">User Responses</h1>
+  <p class="text-muted">Feeling nosy and want to see other people's responses?</p>
+  <div
+    class="table-responsive lookup-table"
+    tabindex="0"
+    role="region"
+    aria-label="User form responses"
+  >
+    <table class="table align-middle mb-0">
+      <caption class="visually-hidden">
+        Users and links to their forms
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Users</th>
+          <th scope="col">Responses</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.userId) {
+          <tr>
+            <th scope="row">{{ user.username }}</th>
+            <td>
+              @if (user.forms.length) {
+                <ul class="form-links">
+                  @for (form of user.forms; track form.id) {
+                    <li>
+                      <a [routerLink]="form.route">{{ form.title }}</a>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <span class="text-muted">No forms available</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="2" class="empty-state">No user responses available yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
