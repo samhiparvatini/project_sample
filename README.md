@@ -96,38 +96,7 @@ Install dependencies:
 npm install
 ```
 
-Create a `.env` file if one does not already exist.
-
-Example:
-
-```env
-PORT=3000
-
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=your_password
-```
-
-**Important:** Do not upload `.env` to GitHub because it may contain database passwords or other secrets.
-
-Make sure `.env` is included in `.gitignore`:
-
-```text
-.env
-node_modules/
-```
-
 Start the backend.
-
-Depending on the project configuration:
-
-```bash
-npm start
-```
-
-or:
 
 ```bash
 npm run dev
@@ -158,12 +127,6 @@ npm install
 ```
 
 Start the Angular development server:
-
-```bash
-ng serve
-```
-
-or:
 
 ```bash
 npm start
