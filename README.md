@@ -161,71 +161,7 @@ If creating a separate database:
 CREATE DATABASE project_sample;
 ```
 
----
-
-# 5. Export the Database for GitHub
-
-It is usually better to upload the **database structure and optional sample data**, rather than the actual PostgreSQL database files.
-
-## Option 1 — Export Using pgAdmin
-
-In pgAdmin:
-
-1. Right-click the database.
-2. Select **Backup**.
-3. Choose an output file.
-4. Select **Plain** as the format if you want a readable SQL file.
-5. Export the database.
-
-Save the file inside the project, for example:
-
-```text
-project_sample/database/database.sql
-```
-
-The SQL file can contain:
-
-* Tables
-* Primary keys
-* Foreign keys
-* Unique constraints
-* Sequences
-* Indexes
-* Sample data
-
----
-
-# 6. Upload the Database SQL File to GitHub
-
-Once `database.sql` has been added to the project:
-
-```bash
-git status
-```
-
-Add the database file:
-
-```bash
-git add database/database.sql
-```
-
-Commit it:
-
-```bash
-git commit -m "Add database schema"
-```
-
-Push it to GitHub:
-
-```bash
-git push
-```
-
-**Important:** Before committing a database export, make sure it does not contain passwords, API keys, tokens, sensitive information, or real production/user data.
-
----
-
-# 7. Import the Database on Another Computer
+# 5. Import the Database on Another Computer
 
 After cloning the repository, open pgAdmin.
 
@@ -251,7 +187,7 @@ This will recreate the database objects included in the SQL file.
 
 ---
 
-# 8. Configure Local Database Connection
+# 6. Configure Local Database Connection
 
 Update the backend `.env` file with the local PostgreSQL settings:
 
@@ -279,7 +215,7 @@ export const pool = new Pool({
 
 ---
 
-# 9. Run the Complete Application
+# 7. Run the Complete Application
 
 You will normally need two terminals.
 
@@ -302,7 +238,7 @@ http://localhost:3000
 ```bash
 cd frontend
 npm install
-ng serve
+npm start
 ```
 
 Frontend:
@@ -376,7 +312,7 @@ In another terminal, start the frontend:
 ```bash
 cd frontend
 npm install
-ng serve
+npm start
 ```
 
 Import:
