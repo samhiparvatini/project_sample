@@ -61,7 +61,7 @@ export class SignupComponent {
       )
       .subscribe({
         next: (user) => {
-          this.loginService.setCurrentUser(user);
+          this.loginService.establishSession(user);
           this.accountCreated.set(true);
           this.signupForm.controls.password.reset();
           this.statusMessage.set('Account created. Opening your form…');

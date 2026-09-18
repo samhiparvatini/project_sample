@@ -24,9 +24,6 @@ export class UserService {
     }
 
     private mapUser(row: UserRow): UserData {
-        // create jwt token with available values like returned properties
-        // + token expiration, for 30 minutes from now
-        // and add token to the response
         return {
             userId: row.user_id,
             firstName: row.first_name,

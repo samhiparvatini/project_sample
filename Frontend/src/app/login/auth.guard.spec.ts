@@ -8,6 +8,7 @@ import { routes } from '../app.routes';
 import { LoginService } from './login.service';
 
 beforeEach(() => {
+  sessionStorage.clear();
   TestBed.configureTestingModule({
     providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()],
   });
@@ -26,9 +27,14 @@ it('allows the form after login and blocks it again after logout', async () => {
   const http = TestBed.inject(HttpTestingController);
   const harness = await RouterTestingHarness.create();
   service.login('sam', 'test-password').subscribe();
-  http
-    .expectOne('http://localhost:3000/api/users/login')
-    .flush({ userId: 1, firstName: 'Sam', lastName: 'Test', userName: 'sam' });
+  http.expectOne('http://localhost:3000/api/users/login').flush({
+    userId: 1,
+    firstName: 'Sam',
+    lastName: 'Test',
+    userName: 'sam',
+    token: 'test-token',
+    expiresAt: Math.floor(Date.now() / 1000) + 1800,
+  });
   await harness.navigateByUrl('/form');
   expect(TestBed.inject(Router).url).toBe('/form');
   http
@@ -53,8 +59,29 @@ it('allows the form after login and blocks it again after logout', async () => {
   harness.detectChanges();
   expect(radios[0]!.checked).toBe(false);
   expect(radios[1]!.checked).toBe(true);
-  service.logout();
+  service.clearSession();
   await harness.navigateByUrl('/login');
   await harness.navigateByUrl('/form');
   expect(TestBed.inject(Router).url).toBe('/login');
+});
+
+it('verifies a restored token before allowing protected lookup navigation', async () => {
+  sessionStorage.setItem('authToken', 'restored-token');
+  sessionStorage.setItem('isLoggedIn', 'true');
+  const harness = await RouterTestingHarness.create();
+  const http = TestBed.inject(HttpTestingController);
+  const navigation = harness.navigateByUrl('/lookup');
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(TestBed.inject(LoginService).isLoggedIn()).toBe(false);
+  http.expectOne('http://localhost:3000/api/users/verify').flush({
+    userId: 1,
+    firstName: 'Sam',
+    lastName: 'Test',
+    userName: 'sam',
+    expiresAt: Math.floor(Date.now() / 1000) + 1800,
+  });
+  await navigation;
+  http.expectOne('http://localhost:3000/api/forms').flush([]);
+  expect(TestBed.inject(Router).url).toBe('/lookup');
+  expect(TestBed.inject(LoginService).isLoggedIn()).toBe(true);
 });

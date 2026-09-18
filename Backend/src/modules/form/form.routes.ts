@@ -6,7 +6,7 @@ export const formRouter = Router();
 formRouter.get('/', formHandler.getForms);
 
 formRouter.post('/', formHandler.createForm);
-formRouter.patch('/:formId/status', formHandler.updateFormStatus);
+formRouter.patch('/:formId/status', formHandler.requireOwner, formHandler.updateFormStatus);
 
 formRouter.get('/:formId/answers', formHandler.getAnswers);
-formRouter.patch('/:formId/answers', formHandler.saveAnswers);
+formRouter.patch('/:formId/answers', formHandler.requireOwner, formHandler.saveAnswers);

@@ -8,7 +8,9 @@ The encoded hash includes the salt; `Password_Salt` also stores the base64 salt.
 
 ## Configuration
 
-Set `DATABASE_URL` and `ARGON2_PASSWORD_PEPPER` in your local `.env`.
+Set `DATABASE_URL`, `ARGON2_PASSWORD_PEPPER`, and `JWT_SECRET` in your local `.env`.
+`JWT_SECRET` must be a stable random secret of at least 32 bytes; generate one with
+`openssl rand -hex 48`. The development secret has been generated locally.
 Generate a pepper with `openssl rand -hex 32`. Never commit the value.
 Apply `migrations/001-user-password-storage.sql` once to the original array-based
 `public."User"` schema. It refuses to discard multi-value arrays and runs atomically.
@@ -19,12 +21,38 @@ This migration also adds generated IDs and case-insensitive username uniqueness.
 - `POST /api/users`: `{ "firstName": "Sam", "lastName": "Example", "userName": "sam", "password": "a-long-password" }`
 - `POST /api/users/login`: `{ "userName": "sam", "password": "a-long-password" }`
 
-Signup returns 201 and the public user profile. Login returns 200 with the public
-profile, or 401 for an incorrect username/password. Hashes and salts are never
+Signup returns 201 and login returns 200 with the public user profile plus
+`token` and `expiresAt` (Unix seconds). Invalid credentials return 401. Hashes and salts are never
 included in these responses. Password whitespace is preserved.
 
-Login currently verifies credentials only; it does not create a session or token.
-The Angular signup/login pages call these endpoints.
+Login and signup issue HS256 JWTs valid for 30 minutes with a fixed issuer and audience.
+`GET /api/users/verify` validates a Bearer token and returns its user's current public
+profile and expiration without extending the token lifetime.
+
+Colors, inconveniences, feedback, forms, and database diagnostics require
+`Authorization: Bearer <token>`. Public signup and login remain accessible without
+a token. User-profile reads are limited to the authenticated user. Form creation
+must use that user's ID; status and answer writes check ownership. Authenticated
+users can still browse the shared response lookup.
+
+The Angular interceptor sends tokens only to the configured local API. The browser
+stores `authToken` and `isLoggedIn` in sessionStorage. Storage values are strings;
+the LoginService exposes a boolean `isLoggedIn()` signal. After a refresh the flag
+stays false until backend verification succeeds. Protected routes use that verified
+state. Expiration or a protected API's 401 clears the session and opens login.
+
+`POST /api/users/logout` revokes the current Bearer token and returns 204.
+Revocation stores a SHA-256 fingerprint, not the raw token, in `revoked_tokens`.
+Authorization checks the database on every protected request, so a revoked token
+returns 401 even after a backend restart. Each new token has a unique JWT ID.
+Expired revocation entries are cleaned up during subsequent logout calls.
+Apply `migrations/005-token-revocations.sql` before deploying this version; it has
+already been applied to the development database.
+
+The frontend waits for backend logout before clearing sessionStorage and redirecting
+to login. If revocation is unavailable, it displays a retryable error. An already
+expired or revoked token (401) is treated as logged out.
+Use HTTPS when deploying the API. Changing JWT_SECRET invalidates existing tokens.
 Legacy SHA-1 or scrypt password rows are not supported by this implementation.
 
 ## Checks
@@ -53,5 +81,5 @@ Lookup links load the saved answers into the response table.
 
 Run the database round-trip test with
 `RUN_DB_TESTS=1 node --import tsx --test tests/form.database.test.ts`.
-It rolls back its test rows. These endpoints still require server-side session
-authentication before being exposed as protected user data.
+It rolls back its test rows. Middleware authenticates API requests; the isolated
+database test exercises the DAO without HTTP middleware.

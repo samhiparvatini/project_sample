@@ -1,3 +1,5 @@
+import { authorize } from './middleware/authorize.middleware.js';
+import { tokenService } from './services/token.service.js';
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -20,10 +22,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRouter);
-app.use('/api/colors', colorRouter);
-app.use('/api/incons', inconRouter);
-app.use('/api/feedback', feedbackRouter);
-app.use('/api/forms', formRouter);
+app.use('/api/colors', authorize, colorRouter);
+app.use('/api/incons', authorize, inconRouter);
+app.use('/api/feedback', authorize, feedbackRouter);
+app.use('/api/forms', authorize, formRouter);
 
 app.get('/', (_req, res) => {
     res.json({
@@ -38,7 +40,7 @@ app.get('/api/hello', (_req, res) => {
     });
 });
 
-app.get('/api/db-test', async (_req, res) => {
+app.get('/api/db-test', authorize, async (_req, res) => {
     try {
         const rows = await sequelize.query(
             'SELECT NOW() AS current_time',
@@ -61,6 +63,7 @@ app.get('/api/db-test', async (_req, res) => {
 
 async function startServer() {
     try {
+        tokenService.assertConfigured();
         await sequelize.authenticate();
         console.log('Connected to PostgreSQL');
 

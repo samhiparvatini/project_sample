@@ -1,15 +1,24 @@
 <section aria-labelledby="form-heading">
   <h1 id="form-heading" class="h3">the SUPER RAD survey!</h1>
   <p class="text-muted">Answer truthfully. Or don't, I guess.</p>
+  <p class="text-muted">All questions are required.</p>
 
   @if (creatingForm()) {
     <p role="status">Starting your form…</p>
   }
-  <form [formGroup]="surveyForm" (ngSubmit)="ngOnSubmit()">
+  <form [formGroup]="surveyForm" (ngSubmit)="ngOnSubmit()" novalidate>
     <fieldset [disabled]="!formId() || submitting() || formStatus() === 3">
       <div class="field">
         <label for="survey-color" class="form-label">What is your favorite color?</label>
-        <select id="survey-color" class="form-select" formControlName="color">
+        <select
+          id="survey-color"
+          class="form-select"
+          formControlName="color"
+          [attr.aria-describedby]="fieldInvalid('color') ? 'color-required' : null"
+          required
+          [class.is-invalid]="fieldInvalid('color')"
+          [attr.aria-invalid]="fieldInvalid('color')"
+        >
           <option value="" disabled>
             {{
               colorsLoading()
@@ -23,6 +32,9 @@
             <option [value]="color.name">{{ color.name }}</option>
           }
         </select>
+        @if (fieldInvalid('color')) {
+          <p id="color-required" class="text-danger mt-2">Select a color.</p>
+        }
         @if (colorsError()) {
           <p class="text-danger mt-2" role="alert">{{ colorsError() }}</p>
         }
@@ -34,6 +46,8 @@
           <label class="answer-option" for="survey-yes">
             <input
               id="survey-yes"
+              [attr.aria-invalid]="fieldInvalid('firstSurvey')"
+              [attr.aria-describedby]="fieldInvalid('firstSurvey') ? 'firstSurvey-required' : null"
               type="checkbox"
               class="form-check-input"
               [checked]="surveyForm.controls.firstSurvey.value === 'yes'"
@@ -44,6 +58,8 @@
           <label class="answer-option" for="survey-no">
             <input
               id="survey-no"
+              [attr.aria-invalid]="fieldInvalid('firstSurvey')"
+              [attr.aria-describedby]="fieldInvalid('firstSurvey') ? 'firstSurvey-required' : null"
               type="checkbox"
               class="form-check-input"
               [checked]="surveyForm.controls.firstSurvey.value === 'no'"
@@ -52,6 +68,9 @@
             No
           </label>
         </div>
+        @if (fieldInvalid('firstSurvey')) {
+          <p id="firstSurvey-required" class="text-danger mt-2">Select Yes or No.</p>
+        }
       </fieldset>
 
       <fieldset class="field">
@@ -60,6 +79,8 @@
           <label class="answer-option" for="survey-spaghetti">
             <input
               id="survey-spaghetti"
+              [attr.aria-invalid]="fieldInvalid('wouldRather')"
+              [attr.aria-describedby]="fieldInvalid('wouldRather') ? 'wouldRather-required' : null"
               type="checkbox"
               class="form-check-input"
               [checked]="surveyForm.controls.wouldRather.value === 'spaghetti'"
@@ -71,6 +92,8 @@
           <label class="answer-option" for="survey-waffles">
             <input
               id="survey-waffles"
+              [attr.aria-invalid]="fieldInvalid('wouldRather')"
+              [attr.aria-describedby]="fieldInvalid('wouldRather') ? 'wouldRather-required' : null"
               type="checkbox"
               class="form-check-input"
               [checked]="surveyForm.controls.wouldRather.value === 'waffles'"
@@ -79,6 +102,9 @@
             Waffles for Ears
           </label>
         </div>
+        @if (fieldInvalid('wouldRather')) {
+          <p id="wouldRather-required" class="text-danger mt-2">Select one of the two options.</p>
+        }
       </fieldset>
 
       <div class="row g-3">
@@ -91,8 +117,17 @@
             class="form-control"
             type="text"
             formControlName="animalRoommate"
+            [attr.aria-describedby]="
+              fieldInvalid('animalRoommate') ? 'animalRoommate-required' : null
+            "
+            required
+            [class.is-invalid]="fieldInvalid('animalRoommate')"
+            [attr.aria-invalid]="fieldInvalid('animalRoommate')"
             placeholder="Enter an animal"
           />
+          @if (fieldInvalid('animalRoommate')) {
+            <p id="animalRoommate-required" class="text-danger mt-2">Enter an animal.</p>
+          }
         </div>
       </div>
 
@@ -105,13 +140,19 @@
           class="form-control"
           type="number"
           formControlName="tacoCount"
+          [attr.aria-describedby]="fieldInvalid('tacoCount') ? 'tacoCount-required' : null"
+          required
+          [class.is-invalid]="fieldInvalid('tacoCount')"
+          [attr.aria-invalid]="fieldInvalid('tacoCount')"
           min="0"
           step="1"
           placeholder="Enter a number"
-          [attr.aria-invalid]="
-            surveyForm.controls.tacoCount.touched && surveyForm.controls.tacoCount.invalid
-          "
         />
+        @if (fieldInvalid('tacoCount')) {
+          <p id="tacoCount-required" class="text-danger mt-2">
+            Enter a whole number of tacos, zero or more.
+          </p>
+        }
       </div>
 
       <div class="field">
@@ -122,7 +163,12 @@
           id="survey-incon"
           class="form-select"
           formControlName="incon"
-          [attr.aria-describedby]="inconsError() ? 'incon-error' : null"
+          required
+          [class.is-invalid]="fieldInvalid('incon')"
+          [attr.aria-invalid]="fieldInvalid('incon')"
+          [attr.aria-describedby]="
+            inconsError() ? 'incon-error' : fieldInvalid('incon') ? 'incon-required' : null
+          "
         >
           <option value="" disabled>
             {{
@@ -137,6 +183,9 @@
             <option [value]="incon.name">{{ incon.name }}</option>
           }
         </select>
+        @if (fieldInvalid('incon')) {
+          <p id="incon-required" class="text-danger mt-2">Select an inconvenience.</p>
+        }
         @if (inconsError()) {
           <p id="incon-error" class="text-danger mt-2" role="alert">{{ inconsError() }}</p>
         }
@@ -157,6 +206,7 @@
                   class="form-check-input"
                   name="feedback"
                   formControlName="feedback"
+                  [attr.aria-describedby]="fieldInvalid('feedback') ? 'feedback-required' : null"
                   [value]="feedback.choice"
                 />
                 {{ feedback.choice }}
@@ -165,6 +215,9 @@
               <p class="text-muted">No feedback choices available.</p>
             }
           </div>
+        }
+        @if (fieldInvalid('feedback')) {
+          <p id="feedback-required" class="text-danger mt-2">Select a feedback option.</p>
         }
       </fieldset>
       @if (errorMessage()) {

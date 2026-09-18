@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import type { LoginUser } from '../login/login.service';
+import type { AuthSession } from '../login/login.service';
 
 export interface SignupInput {
   firstName: string;
@@ -14,7 +14,7 @@ export interface SignupInput {
 export class SignupService {
   private readonly http = inject(HttpClient);
 
-  signup(input: SignupInput): Observable<LoginUser> {
-    return this.http.post<LoginUser>('http://localhost:3000/api/users', input);
+  signup(input: SignupInput): Observable<AuthSession> {
+    return this.http.post<AuthSession>('http://localhost:3000/api/users', input);
   }
 }

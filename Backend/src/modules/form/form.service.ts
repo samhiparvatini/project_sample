@@ -6,6 +6,10 @@ import type { CreateFormInput, FormData, FormListRow } from './form.model.js';
 export class FormService {
     constructor(private readonly formDao: FormDao) {}
 
+    async isOwner(formId: number, userId: number): Promise<boolean> {
+        return this.formDao.isOwner(formId, userId);
+    }
+
     async getForms(): Promise<FormListRow[]> {
         return this.formDao.getForms();
     }

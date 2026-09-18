@@ -7,8 +7,11 @@
     @if (currentUser(); as user) {
       <span class="welcome">Welcome, {{ user.firstName }}</span>
     }
-    <button type="button" class="logout-button" routerLink="/login" (click)="logout()">
-      Logout
+    <button type="button" class="logout-button" [disabled]="loggingOut()" (click)="logout()">
+      {{ loggingOut() ? 'Logging out…' : 'Logout' }}
     </button>
   </div>
+  @if (logoutError()) {
+    <p class="text-danger mb-0" role="alert">{{ logoutError() }}</p>
+  }
 </nav>

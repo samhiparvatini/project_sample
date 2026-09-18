@@ -9,6 +9,7 @@ import { LoginService } from '../login/login.service';
 describe('Signup form', () => {
   let http: HttpTestingController;
   beforeEach(async () => {
+    sessionStorage.clear();
     await TestBed.configureTestingModule({
       imports: [SignupComponent],
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
@@ -58,7 +59,14 @@ describe('Signup form', () => {
       password: ' secret password ',
     });
     request.flush(
-      { userId: 1, firstName: 'Sam', lastName: 'Test', userName: 'sam' },
+      {
+        userId: 1,
+        firstName: 'Sam',
+        lastName: 'Test',
+        userName: 'sam',
+        token: 'test-token',
+        expiresAt: Math.floor(Date.now() / 1000) + 1800,
+      },
       { status: 201, statusText: 'Created' },
     );
     fixture.detectChanges();

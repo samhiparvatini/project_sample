@@ -16,9 +16,9 @@ export const routes: Routes = [
     component: WorkspaceComponent,
     children: [
       { path: 'form', component: FormComponent, canActivate: [authGuard] },
-      { path: 'lookup', component: LookupComponent },
+      { path: 'lookup', component: LookupComponent, canActivate: [authGuard] },
     ],
   },
-  { path: 'welcome', component: WelcomeComponent },
+  { path: 'welcome', component: WelcomeComponent, canActivate: [authGuard] },
   // { path: 'snoopy', component: SnoopyComponent }
 ];

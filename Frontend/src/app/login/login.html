@@ -2,6 +2,7 @@
   <h1 id="login-heading">Login</h1>
   <h2 class="intro">Please enter your username and password to log in.</h2>
 
+  <p class="status-message" role="status">{{ statusMessage() }}</p>
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
     <div class="field">
       <label for="username" class="form-label">Username</label>
@@ -69,6 +70,5 @@
       Don’t have an account?
       <a class="sign-up" routerLink="/signup">Sign up</a>
     </p>
-    <p class="status-message" role="status">{{ statusMessage() }}</p>
   </form>
 </section>

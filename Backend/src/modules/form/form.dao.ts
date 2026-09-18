@@ -9,6 +9,14 @@ const formColumns = `"Id" AS "formId", "User" AS "userId",
 export class FormDao {
     constructor(private readonly database: Sequelize) {}
 
+    async isOwner(formId: number, userId: number): Promise<boolean> {
+        const rows = await this.database.query<{ owned: boolean }>(
+            'SELECT EXISTS (SELECT 1 FROM public."Form" WHERE "Id" = :formId AND "User" = :userId) AS owned',
+            { replacements: { formId, userId }, type: QueryTypes.SELECT }
+        );
+        return rows[0]?.owned === true;
+    }
+
     async getForms(): Promise<FormListRow[]> {
         return this.database.query<FormListRow>(
             `SELECT f."Id" AS "formId", f."User" AS "userId",
@@ -63,6 +71,10 @@ export class FormDao {
                 SELECT * FROM locked_form f WHERE
                   (SELECT count(*) FROM public."Questions" q JOIN payload p ON q."Key" = p."questionKey"
                    WHERE q."Form" = f."Id") = (SELECT count(*) FROM payload)
+                  AND (:statusId <> 3 OR (
+                    (SELECT count(*) FROM payload) = :questionCount
+                    AND NOT EXISTS (SELECT 1 FROM payload WHERE answer IS NULL OR answer !~ '[^[:space:]]')
+                  ))
              ), saved_answers AS (
                 UPDATE public."Questions" q SET "Answer" = p.answer
                 FROM payload p, valid_form f
@@ -72,7 +84,7 @@ export class FormDao {
              WHERE "Id" IN (SELECT "Id" FROM valid_form)
                AND (SELECT count(*) FROM saved_answers) = (SELECT count(*) FROM payload)
              RETURNING ${formColumns}`,
-            { replacements: { formId, answers: JSON.stringify(answers), statusId }, type: QueryTypes.SELECT }
+            { replacements: { formId, answers: JSON.stringify(answers), statusId, questionCount: QUESTIONS.length }, type: QueryTypes.SELECT }
         );
         return rows[0] ?? null;
     }
@@ -80,8 +92,20 @@ export class FormDao {
     async updateFormStatus(formId: number, statusId: number): Promise<FormData | null> {
         const rows = await this.database.query<FormData>(
             `UPDATE public."Form" SET "Status_Id" = :statusId
-             WHERE "Id" = :formId RETURNING ${formColumns}`,
-            { replacements: { formId, statusId }, type: QueryTypes.SELECT }
+             WHERE "Id" = :formId
+               AND (:statusId <> 3 OR (
+                 NOT EXISTS (
+                   SELECT 1 FROM jsonb_to_recordset(CAST(:questions AS jsonb)) AS expected(key text)
+                   WHERE NOT EXISTS (
+                     SELECT 1 FROM public."Questions" q
+                     WHERE q."Form" = :formId AND q."Key" = expected.key
+                       AND q."Answer" ~ '[^[:space:]]'
+                   )
+                 )
+                 AND EXISTS (SELECT 1 FROM public."Questions" q
+                   WHERE q."Form" = :formId AND q."Key" = 'firstSurvey' AND q."Answer" = 'No')
+               )) RETURNING ${formColumns}`,
+            { replacements: { formId, statusId, questions: JSON.stringify(QUESTIONS) }, type: QueryTypes.SELECT }
         );
         return rows[0] ?? null;
     }

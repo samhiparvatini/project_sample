@@ -28,6 +28,7 @@ test('form insert and status updates round-trip in a rolled-back transaction', {
         assert.ok(form.formId > 0);
         assert.match(form.dateCreated, /^\d{4}-\d{2}-\d{2}$/);
         const initialAnswers = await service.getAnswers(form.formId);
+        assert.equal(await service.updateFormStatus(form.formId, 3), null);
         assert.equal(initialAnswers.length, 7);
         assert.ok(initialAnswers.every(answer => answer.answer === null));
         assert.equal(new Set(initialAnswers.map(answer => answer.questionKey)).size, 7);
@@ -45,6 +46,12 @@ test('form insert and status updates round-trip in a rolled-back transaction', {
         assert.equal((await service.getAnswers(form.formId)).find(q => q.questionKey === 'firstSurvey')!.answer, 'No');
         const updated = await service.updateFormStatus(form.formId, 2);
         assert.deepEqual(updated, { ...form, statusId: 2 });
+        assert.equal(await service.saveAnswers(form.formId, answers, 3), null);
+        const completeValues: Record<string, string> = {
+            color: 'Red', firstSurvey: 'No', wouldRather: 'Spaghetti for Hair',
+            animalRoommate: 'Tiger', tacoCount: '0', incon: 'Wet socks', feedback: 'Great'
+        };
+        for (const answer of answers) answer.answer = completeValues[answer.questionKey]!;
         assert.deepEqual(await service.saveAnswers(form.formId, answers, 3), { ...form, statusId: 3 });
         assert.equal(await service.saveAnswers(form.formId, answers, 2), null);
         const listed = (await service.getForms()).find(item => item.formId === form.formId);

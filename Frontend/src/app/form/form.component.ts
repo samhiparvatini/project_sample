@@ -47,13 +47,26 @@ export class FormComponent implements OnInit {
   protected readonly errorMessage = signal('');
 
   protected readonly surveyForm = new FormGroup({
-    color: new FormControl('', { nonNullable: true }),
-    incon: new FormControl('', { nonNullable: true }),
-    feedback: new FormControl({ value: '', disabled: true }, { nonNullable: true }),
-    firstSurvey: new FormControl<'yes' | 'no' | null>(null),
-    wouldRather: new FormControl<'spaghetti' | 'waffles' | null>(null),
-    animalRoommate: new FormControl('', { nonNullable: true }),
+    color: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/\S/)],
+    }),
+    incon: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/\S/)],
+    }),
+    feedback: new FormControl(
+      { value: '', disabled: true },
+      { nonNullable: true, validators: [Validators.required, Validators.pattern(/\S/)] },
+    ),
+    firstSurvey: new FormControl<'yes' | 'no' | null>(null, Validators.required),
+    wouldRather: new FormControl<'spaghetti' | 'waffles' | null>(null, Validators.required),
+    animalRoommate: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/\S/)],
+    }),
     tacoCount: new FormControl<number | null>(null, [
+      Validators.required,
       Validators.min(0),
       Validators.pattern(/^\d+$/),
     ]),
@@ -247,16 +260,30 @@ export class FormComponent implements OnInit {
     this.queueSave(2);
   }
 
+  protected fieldInvalid(key: keyof typeof this.surveyForm.controls): boolean {
+    const control = this.surveyForm.controls[key];
+    const value = control.value;
+    return control.touched && (control.invalid || value === null || String(value).trim() === '');
+  }
+
   protected ngOnSubmit(): void {
     if (!this.formId() || this.submitting() || this.formStatus() === 3) return;
     this.errorMessage.set('');
+    this.surveyForm.markAllAsTouched();
+    // Disabled lookup controls are excluded from FormGroup validity, so check raw answers too.
+    if (this.answerSnapshot().some((item) => item.answer === null || item.answer.trim() === '')) {
+      this.errorMessage.set('Please answer all seven questions before submitting.');
+      return;
+    }
     if (this.surveyForm.controls.tacoCount.invalid) {
       this.surveyForm.controls.tacoCount.markAsTouched();
       this.errorMessage.set('Enter a whole number of tacos, zero or more.');
       return;
     }
     if (this.surveyForm.controls.firstSurvey.value !== 'no') {
-      this.errorMessage.set('You must select No to "Are pineapples on pizza acceptable?" to submit.');
+      this.errorMessage.set(
+        'You must select No to "Are pineapples on pizza acceptable?" to submit.',
+      );
       return;
     }
     this.submitting.set(true);

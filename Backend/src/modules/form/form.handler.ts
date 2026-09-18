@@ -14,6 +14,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export class FormHandler {
     constructor(private readonly formService: FormService) {}
 
+    requireOwner = async (req: Request, res: Response, next: import('express').NextFunction): Promise<void> => {
+        if (!req.auth) { res.status(401).json({ message: 'Authentication required' }); return; }
+        const formId = Number(req.params.formId);
+        if (!isPositiveId(formId)) { res.status(400).json({ message: 'Invalid form ID' }); return; }
+        try {
+            if (!(await this.formService.isOwner(formId, req.auth.userId))) {
+                res.status(403).json({ message: 'You cannot edit this form' });
+                return;
+            }
+            next();
+        } catch { res.status(500).json({ message: 'Unable to check form ownership' }); }
+    };
+
     getAnswers = async (req: Request, res: Response): Promise<void> => {
         const formId = Number(req.params.formId);
         if (!isPositiveId(formId)) {
@@ -49,6 +62,10 @@ export class FormHandler {
             ...item, answer: item.answer === '' ? null : item.answer
         }));
         const tacos = answers.find(item => item.questionKey === 'tacoCount')!.answer;
+        if (body.statusId === 3 && answers.some(item => item.answer === null || item.answer.trim() === '')) {
+            res.status(400).json({ message: 'All seven questions must be answered before completing the form' });
+            return;
+        }
         const pineapple = answers.find(item => item.questionKey === 'firstSurvey')!.answer;
         const wouldRather = answers.find(item => item.questionKey === 'wouldRather')!.answer;
         if ((pineapple !== null && pineapple !== 'Yes' && pineapple !== 'No')
@@ -91,6 +108,8 @@ export class FormHandler {
             res.status(400).json({ message: 'userId must be a positive integer' });
             return;
         }
+        if (!req.auth) { res.status(401).json({ message: 'Authentication required' }); return; }
+        if (body.userId !== req.auth.userId) { res.status(403).json({ message: 'You can only create your own form' }); return; }
         try {
             res.status(201).json(await this.formService.createForm({ userId: body.userId }));
         } catch (error) {
@@ -114,6 +133,10 @@ export class FormHandler {
         try {
             const form = await this.formService.updateFormStatus(formId, body.statusId);
             if (!form) {
+                if (body.statusId === 3) {
+                    res.status(409).json({ message: 'Form not found or required answers are missing' });
+                    return;
+                }
                 res.status(404).json({ message: 'Form not found' });
                 return;
             }

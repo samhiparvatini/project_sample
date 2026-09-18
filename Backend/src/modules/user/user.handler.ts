@@ -1,10 +1,13 @@
+import { tokenRevocations } from '../../services/auth.container.js';
+import type { TokenRevocations } from '../../services/token-revocation.service.js';
 import type { Request, Response } from 'express';
 import { UniqueConstraintError } from 'sequelize';
 import type { UserService } from './user.service.js';
+import { tokenService } from '../../services/token.service.js';
 import type { CreateUserInput } from './user.model.js';
 
 export class UserHandler {
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService, private readonly revocations: TokenRevocations = tokenRevocations) {}
 
     createUser = async (req: Request, res: Response): Promise<void> => {
         const input = this.validateCreateUser(req.body);
@@ -17,7 +20,7 @@ export class UserHandler {
 
         try {
             const user = await this.userService.createUser(input);
-            res.status(201).json(user);
+            res.status(201).json(tokenService.issue(user));
         } catch (error) {
             if (error instanceof UniqueConstraintError) {
                 res.status(409).json({ message: 'That user name is already taken' });
@@ -47,14 +50,37 @@ export class UserHandler {
                 res.status(401).json({ message: 'Invalid username or password' });
                 return;
             }
-            res.json(user);
+            res.json(tokenService.issue(user));
         } catch {
             res.status(500).json({ message: 'Unable to log in' });
         }
     };
 
+    logout = async (req: Request, res: Response): Promise<void> => {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!req.auth || !token) { res.status(401).json({ message: 'Authentication required' }); return; }
+        try {
+            await this.revocations.revoke(token, req.auth.expiresAt);
+            res.status(204).send();
+        } catch {
+            res.status(503).json({ message: 'Unable to log out. Please try again.' });
+        }
+    };
+
+    verifyToken = async (req: Request, res: Response): Promise<void> => {
+        if (!req.auth) { res.status(401).json({ message: 'Authentication required' }); return; }
+        try {
+            const user = await this.userService.getUserById(req.auth.userId);
+            if (!user) { res.status(401).json({ message: 'Account no longer exists' }); return; }
+            res.json({ ...user, expiresAt: req.auth.expiresAt });
+        } catch {
+            res.status(500).json({ message: 'Unable to verify session' });
+        }
+    };
+
     getUserById = async (req: Request, res: Response): Promise<void> => {
         const userId = Number(req.params.userId);
+        if (req.auth?.userId !== userId) { res.status(403).json({ message: 'Access denied' }); return; }
         if (!Number.isInteger(userId) || userId <= 0) {
             res.status(400).json({ message: 'userId must be a positive integer' });
             return;
