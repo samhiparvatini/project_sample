@@ -5,6 +5,7 @@ import { WorkspaceComponent } from './workspace/workspace.component';
 import { FormComponent } from './form/form.component';
 import { LookupComponent } from './lookup/lookup.component';
 import { WelcomeComponent } from './form/welcome/welcome.component';
+import { authGuard } from './login/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -14,11 +15,10 @@ export const routes: Routes = [
     path: '',
     component: WorkspaceComponent,
     children: [
-      { path: 'form', component: FormComponent },
+      { path: 'form', component: FormComponent, canActivate: [authGuard] },
       { path: 'lookup', component: LookupComponent },
     ],
   },
   { path: 'welcome', component: WelcomeComponent },
-  { path: 'form', component: FormComponent }
   // { path: 'snoopy', component: SnoopyComponent }
 ];

@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SignupComponent } from './signup.component';
+import { LoginService } from '../login/login.service';
 
 describe('Signup form', () => {
   let http: HttpTestingController;
@@ -38,8 +39,13 @@ describe('Signup form', () => {
     return { fixture, root, submit };
   }
 
-  it('posts the expected payload once and navigates to login after creation', () => {
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+  it('establishes the current user before navigating to the form after creation', () => {
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockImplementation(async () => {
+        expect(TestBed.inject(LoginService).currentUser()?.userName).toBe('sam');
+        return true;
+      });
     const { fixture, root, submit } = setup();
     expect(root.querySelector('button')!.disabled).toBe(true);
     submit();
@@ -56,7 +62,7 @@ describe('Signup form', () => {
       { status: 201, statusText: 'Created' },
     );
     fixture.detectChanges();
-    expect(navigate).toHaveBeenCalledWith('/login');
+    expect(navigate).toHaveBeenCalledWith('/form');
     expect(root.querySelector<HTMLInputElement>('#signup-password')!.value).toBe('');
     submit();
     http.expectNone('http://localhost:3000/api/users');
@@ -72,6 +78,7 @@ describe('Signup form', () => {
     expect(root.textContent).toContain('That username is already taken.');
     expect(root.querySelector('button')!.disabled).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
+    expect(TestBed.inject(LoginService).currentUser()).toBeNull();
   });
 
   it('does not submit a short password', () => {

@@ -15,32 +15,59 @@
         <tr>
           <th scope="col">Users</th>
           <th scope="col">Responses</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
         @for (user of users(); track user.userId) {
-          <tr>
-            <th scope="row">{{ user.username }}</th>
-            <td>
-              @if (user.forms.length) {
-                <ul class="form-links">
-                  @for (form of user.forms; track form.id) {
-                    <li>
-                      <a [routerLink]="form.route">{{ form.title }}</a>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <span class="text-muted">No forms available</span>
+          @for (form of user.forms; track form.id; let first = $first) {
+            <tr>
+              @if (first) {
+                <th scope="rowgroup" [attr.rowspan]="user.forms.length">{{ user.username }}</th>
               }
-            </td>
-          </tr>
+              <td>
+                <a routerLink="/lookup" [queryParams]="{ formId: form.id }">{{ form.title }}</a>
+              </td>
+              <td>{{ form.status }}</td>
+            </tr>
+          }
         } @empty {
           <tr>
-            <td colspan="2" class="empty-state">No user responses available yet.</td>
+            <td colspan="3" class="empty-state">
+              @if (loading()) {
+                <span role="status">Loading forms…</span>
+              } @else if (errorMessage()) {
+                <span class="text-danger" role="alert">{{ errorMessage() }}</span>
+              } @else {
+                No user responses available yet.
+              }
+            </td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+  @if (selectedForm(); as form) {
+    <section class="mt-4" aria-labelledby="form-details-heading">
+      <h2 id="form-details-heading" class="h4">Form #{{ form.formId }}</h2>
+      <dl>
+        <dt>User</dt>
+        <dd>{{ form.userName }}</dd>
+        <dt>Created</dt>
+        <dd>{{ form.dateCreated }}</dd>
+        <dt>Status</dt>
+        <dd>{{ form.statusName ?? 'Unknown status' }}</dd>
+      </dl>
+      @if (answersLoading()) {
+        <p role="status">Loading answers…</p>
+      } @else if (answersError()) {
+        <p class="text-danger" role="alert">{{ answersError() }}</p>
+      } @else {
+        <app-response [username]="form.userName" [responses]="responses()" />
+      }
+      <a routerLink="/lookup">Close details</a>
+    </section>
+  } @else if (selectedId() !== null && !loading() && !errorMessage()) {
+    <p class="mt-4" role="status">Form not found.</p>
+  }
 </section>

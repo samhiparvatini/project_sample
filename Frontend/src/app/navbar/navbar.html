@@ -3,4 +3,12 @@
     <a routerLink="/form" routerLinkActive="active" ariaCurrentWhenActive="page">survey!!</a>
     <a routerLink="/lookup" routerLinkActive="active" ariaCurrentWhenActive="page">snooping</a>
   </div>
+  <div class="account-menu">
+    @if (currentUser(); as user) {
+      <span class="welcome">Welcome, {{ user.firstName }}</span>
+    }
+    <button type="button" class="logout-button" routerLink="/login" (click)="logout()">
+      Logout
+    </button>
+  </div>
 </nav>

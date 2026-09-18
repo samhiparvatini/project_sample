@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { SignupService } from './signup.service';
+import { LoginService } from '../login/login.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
@@ -14,6 +15,7 @@ import { Router, RouterLink } from '@angular/router';
 })
 export class SignupComponent {
   private readonly signupService = inject(SignupService);
+  private readonly loginService = inject(LoginService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly isSubmitting = signal(false);
@@ -58,13 +60,22 @@ export class SignupComponent {
         finalize(() => this.isSubmitting.set(false)),
       )
       .subscribe({
-        next: () => {
+        next: (user) => {
+          this.loginService.setCurrentUser(user);
           this.accountCreated.set(true);
           this.signupForm.controls.password.reset();
-          this.statusMessage.set('Account created. Please log in.');
-          void this.router.navigateByUrl('/login').catch(() => {
-            this.statusMessage.set('Account created. Use the Log in link below to continue.');
-          });
+          this.statusMessage.set('Account created. Opening your form…');
+          void this.router
+            .navigateByUrl('/form')
+            .then((navigated) => {
+              if (!navigated)
+                this.statusMessage.set(
+                  'Account created. Use the Open form link below to continue.',
+                );
+            })
+            .catch(() => {
+              this.statusMessage.set('Account created. Use the Open form link below to continue.');
+            });
         },
         error: (error: HttpErrorResponse) => {
           this.statusMessage.set(

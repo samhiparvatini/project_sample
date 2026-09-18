@@ -57,6 +57,38 @@ a:focus-visible {
   outline-offset: 3px;
 }
 
+.account-menu {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.welcome {
+  color: var(--app-ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.logout-button {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--app-accent);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--app-accent);
+  font-weight: 600;
+}
+
+.logout-button:hover {
+  background: #fcf0e9;
+}
+
+.logout-button:focus-visible {
+  outline: 3px solid var(--app-accent);
+  outline-offset: 3px;
+}
+
 @media (max-width: 575px) {
   .app-nav {
     align-items: flex-start;

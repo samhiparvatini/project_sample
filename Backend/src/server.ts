@@ -5,6 +5,9 @@ import { QueryTypes } from 'sequelize';
 import { sequelize } from './db.js';
 import { userRouter } from './modules/user/user.routes.js';
 import { colorRouter } from './modules/form/colors/colors.routes.js';
+import { inconRouter } from './modules/form/inconveniences/incon.routes.js';
+import { feedbackRouter } from './modules/form/feedback/feedback.routes.js';
+import { formRouter } from './modules/form/form.routes.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -18,6 +21,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRouter);
 app.use('/api/colors', colorRouter);
+app.use('/api/incons', inconRouter);
+app.use('/api/feedback', feedbackRouter);
+app.use('/api/forms', formRouter);
 
 app.get('/', (_req, res) => {
     res.json({
